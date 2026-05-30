@@ -1,0 +1,15 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+
+metadata:
+  name: juris-route
+  namespace: juris-ns
+
+spec:
+  parentRefs:
+  - name: juris-gateway
+
+  rules:
+  - backendRefs:
+    - name: juris-service
+      port: 80

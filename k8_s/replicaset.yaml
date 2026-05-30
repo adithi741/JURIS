@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+
+metadata:
+  name: juris-replicaset
+  namespace: juris-ns
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: juris
+
+  template:
+
+    metadata:
+      labels:
+        app: juris
+
+    spec:
+      containers:
+
+      - name: nginx-container
+        image: nginx

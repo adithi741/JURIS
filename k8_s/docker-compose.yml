@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+
+  backend:
+    build: .
+    container_name: juris-backend
+
+    ports:
+      - "5000:5000"
+
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    image: node:20
+
+    working_dir: /frontend
+
+    volumes:
+      - ./frontend:/frontend
+
+    command: npm run dev
+
+    ports:
+      - "5173:5173"

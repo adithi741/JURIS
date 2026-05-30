@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+
+metadata:
+  name: juris-pod
+  namespace: juris-ns
+
+spec:
+  containers:
+    - name: juris-container
+      image: nginx

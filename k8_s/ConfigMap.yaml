@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: juris-configmap
+  namespace: juris-ns
+
+data:
+  APP_NAME: JURIS
+  APP_ENV: DEV
+  APP_PORT: "5000"
