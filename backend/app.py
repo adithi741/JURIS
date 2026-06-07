@@ -1,12 +1,15 @@
 import sqlite3
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask import request
 from werkzeug.utils import secure_filename
 import os
-
+from flask import send_from_directory
 from routes.auth import auth_bp
 from flask import send_from_directory
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from flask import send_file
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "juris_secret_key"
@@ -49,7 +52,8 @@ def add_case():
     conn = sqlite3.connect("juris.db")
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+    """
     INSERT INTO cases
     (
         case_number,
@@ -64,7 +68,15 @@ def add_case():
         client_name,
         case_type,
         status
-    ))
+    )
+    )
+    cursor.execute(
+    """
+    INSERT INTO activity_logs(activity)
+    VALUES (?)
+    """,
+    (f"New case {case_number} added",)
+)
 
     conn.commit()
     conn.close()
@@ -298,6 +310,13 @@ def add_hearing():
         hearing_time,
         status
     ))
+    cursor.execute(
+    """
+    INSERT INTO activity_logs(activity)
+    VALUES (?)
+    """,
+    (f"Hearing scheduled in {courtroom}",)
+)
 
     conn.commit()
     conn.close()
@@ -493,9 +512,33 @@ def ask_ai():
 
     question = data["question"].lower()
 
+    # Search existing documents first
     if "nda" in question:
 
-        reply = """
+        conn = sqlite3.connect("juris.db")
+        cursor = conn.cursor()
+
+        cursor.execute("""
+        SELECT document_name
+        FROM documents
+        WHERE LOWER(document_name) LIKE '%nda%'
+        LIMIT 1
+        """)
+
+        doc = cursor.fetchone()
+
+        conn.close()
+
+        if doc:
+
+            return {
+                "type": "document",
+                "filename": doc[0]
+            }
+
+        else:
+
+            reply = """
 NON-DISCLOSURE AGREEMENT
 
 This Agreement is entered into between Party A and Party B.
@@ -504,16 +547,6 @@ Both parties agree not to disclose confidential information
 shared during the business relationship.
 
 This agreement remains valid for 2 years.
-"""
-
-    elif "rental" in question:
-
-        reply = """
-RENTAL AGREEMENT
-
-This Rental Agreement is made between Landlord and Tenant.
-
-Tenant agrees to pay rent monthly and maintain the property.
 """
 
     elif "employment" in question:
@@ -544,22 +577,148 @@ AI Legal Assistant
 Draft template not found.
 
 Try:
-- Generate NDA
-- Generate Rental Agreement
-- Generate Employment Agreement
-- Generate Legal Notice
+- NDA
+- Employment Agreement
+- Legal Notice
 """
 
     return {
+        "type": "text",
         "reply": reply
     }
-    
+
 @app.route("/uploads/<filename>")
 def get_file(filename):
 
     return send_from_directory(
         "uploads",
         filename
+    )
+
+@app.route("/profile/<email>", methods=["GET"])
+def get_profile(email):
+
+    conn = sqlite3.connect("juris.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT name,email,phone
+        FROM users
+        WHERE email=?
+        """,
+        (email,)
+    )
+
+    user = cursor.fetchone()
+
+    conn.close()
+
+    return jsonify({
+        "name": user[0],
+        "email": user[1],
+        "phone": user[2]
+    })
+
+@app.route("/update-profile", methods=["PUT"])
+def update_profile():
+
+    data = request.json
+
+    conn = sqlite3.connect("juris.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        UPDATE users
+        SET name=?,
+            phone=?
+        WHERE email=?
+        """,
+        (
+            data["name"],
+            data["phone"],
+            data["email"]
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "message":"Profile Updated Successfully"
+    })
+
+@app.route("/upcoming-hearings")
+def upcoming_hearings():
+
+    conn = sqlite3.connect("juris.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    SELECT case_number,
+           hearing_time,
+           courtroom
+    FROM hearings
+    WHERE status IN ('Upcoming','In Progress')
+    ORDER BY id DESC
+    LIMIT 5
+    """)
+
+    data = cursor.fetchall()
+
+    conn.close()
+
+    return {
+        "hearings": data
+    }
+
+@app.route("/activities")
+def get_activities():
+
+    conn = sqlite3.connect("juris.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    SELECT activity
+    FROM activity_logs
+    ORDER BY id DESC
+    LIMIT 5
+    """)
+
+    data = cursor.fetchall()
+
+    conn.close()
+
+    return {
+        "activities": data
+    }
+
+@app.route("/generate-pdf", methods=["POST"])
+def generate_pdf():
+
+    data = request.json
+
+    content = data["content"]
+
+    pdf_file = "legal_document.pdf"
+
+    doc = SimpleDocTemplate(pdf_file)
+
+    styles = getSampleStyleSheet()
+
+    story = []
+
+    for line in content.split("\n"):
+        story.append(
+            Paragraph(line, styles["BodyText"])
+        )
+
+    doc.build(story)
+
+    return send_file(
+        pdf_file,
+        as_attachment=True
     )
 
 if __name__ == "__main__":

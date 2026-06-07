@@ -13,9 +13,10 @@ import {
 function Hearings() {
 
   const [hearings, setHearings] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
   const [showModal, setShowModal] = useState(false);
 const [selectedHearing, setSelectedHearing] = useState(null);
-
+const [showAddModal, setShowAddModal] = useState(false);
 const [courtroom, setCourtroom] = useState("");
 const [caseNumber, setCaseNumber] = useState("");
 const [judgeName, setJudgeName] = useState("");
@@ -92,9 +93,33 @@ const updateHearing = async () => {
   }
 
 };
+const addHearing = async () => {
+
+  try {
+
+    await axios.post(
+      "http://127.0.0.1:5000/add-hearing",
+      {
+        courtroom,
+        case_number: caseNumber,
+        judge_name: judgeName,
+        hearing_time: hearingTime,
+        status,
+      }
+    );
+
+    window.location.reload();
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
 
   return (
-
+  <>
     <div className="flex bg-[#020617] text-white min-h-screen">
 
       {/* SIDEBAR */}
@@ -110,6 +135,41 @@ const updateHearing = async () => {
         <PageHeader
           title="Hearings"
           subtitle="Track courtroom schedules and hearing timelines."
+        />
+
+        <div className="flex justify-end mb-6">
+          <button
+  onClick={() => {
+    setCourtroom("");
+    setCaseNumber("");
+    setJudgeName("");
+    setHearingTime("");
+    setStatus("");
+
+    setShowAddModal(true);
+  }}
+  className="
+    flex items-center gap-2
+    bg-green-500
+    hover:bg-green-600
+    px-5 py-3
+    rounded-xl
+    font-semibold
+  "
+>
+  <FaPlus />
+  Add Hearing
+</button>
+
+      </div>
+
+        {/* SEARCH BAR */}
+        <input
+          type="text"
+          placeholder="Search Hearings..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full mb-6 bg-white/10 text-white p-4 rounded-xl"
         />
 
         {/* HEARINGS GRID */}
@@ -157,8 +217,11 @@ const updateHearing = async () => {
               </div>
 <div className="flex gap-2 mt-6">
 
-  <button
-    onClick={() => openHearing(hearing)}
+    <button
+    onClick={() => {
+      setIsEditing(false);
+      openHearing(hearing);
+    }}
     className="bg-blue-500 px-3 py-2 rounded-xl flex items-center gap-2"
   >
     <FaEye />
@@ -166,7 +229,10 @@ const updateHearing = async () => {
   </button>
 
   <button
-    onClick={() => openHearing(hearing)}
+    onClick={() => {
+      setIsEditing(true);
+      openHearing(hearing);
+    }}
     className="bg-yellow-500 text-black px-3 py-2 rounded-xl flex items-center gap-2"
   >
     <FaEdit />
@@ -196,46 +262,43 @@ const updateHearing = async () => {
 
   <div className="bg-[#061129] p-8 rounded-3xl w-[500px]">
 
-    <h2 className="text-3xl font-bold mb-6">
-      Edit Hearing
+    <h2 className="text-3xl font-bold text-white mb-6">
+      {isEditing ? "Edit Hearing" : "Hearing Details"}
     </h2>
 
     <div className="space-y-4">
 
       <input
-  type="text"
-  placeholder="Search Hearings..."
-  value={search}
-  onChange={(e) => setSearch(e.target.value)}
-  className="w-full mb-6 bg-white/10 p-4 rounded-xl"
-/>
-
-      <input
         value={courtroom}
+        readOnly={!isEditing}
         onChange={(e) => setCourtroom(e.target.value)}
         className="w-full bg-white/10 p-4 rounded-xl"
       />
 
       <input
         value={caseNumber}
+        readOnly={!isEditing}
         onChange={(e) => setCaseNumber(e.target.value)}
         className="w-full bg-white/10 p-4 rounded-xl"
       />
 
       <input
         value={judgeName}
+        readOnly={!isEditing}
         onChange={(e) => setJudgeName(e.target.value)}
         className="w-full bg-white/10 p-4 rounded-xl"
       />
 
       <input
         value={hearingTime}
+        readOnly={!isEditing}
         onChange={(e) => setHearingTime(e.target.value)}
         className="w-full bg-white/10 p-4 rounded-xl"
       />
 
       <input
         value={status}
+        readOnly={!isEditing}
         onChange={(e) => setStatus(e.target.value)}
         className="w-full bg-white/10 p-4 rounded-xl"
       />
@@ -244,12 +307,14 @@ const updateHearing = async () => {
 
     <div className="flex gap-3 mt-6">
 
+      {isEditing && (
       <button
         onClick={updateHearing}
         className="bg-green-500 px-5 py-3 rounded-xl"
       >
         Save
       </button>
+    )}
 
       <button
         onClick={() => setShowModal(false)}
@@ -265,10 +330,84 @@ const updateHearing = async () => {
 </div>
 
 )}
+</div>
+{showAddModal && (
+
+<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+
+  <div className="bg-[#061129] p-8 rounded-3xl w-[500px]">
+
+    <h2 className="text-3xl font-bold  text-white mb-6">
+      Add Hearing
+    </h2>
+
+    <div className="space-y-4">
+
+      <input
+        placeholder="Courtroom"
+        value={courtroom}
+        onChange={(e) => setCourtroom(e.target.value)}
+        className="w-full bg-white/10 text-white p-4 rounded-xl"
+      />
+
+      <input
+        placeholder="Case Number"
+        value={caseNumber}
+        onChange={(e) => setCaseNumber(e.target.value)}
+        className="w-full bg-white/10 text-white p-4 rounded-xl"
+      />
+
+      <input
+        placeholder="Judge Name"
+        value={judgeName}
+        onChange={(e) => setJudgeName(e.target.value)}
+        className="w-full bg-white/10 text-white p-4 rounded-xl"
+      />
+
+      <input
+        placeholder="Hearing Time"
+        value={hearingTime}
+        onChange={(e) => setHearingTime(e.target.value)}
+        className="w-full bg-white/10 text-white p-4 rounded-xl"
+      />
+
+      <input
+        placeholder="Status"
+        value={status}
+        onChange={(e) => setStatus(e.target.value)}
+        className="w-full bg-white/10 text-white p-4 rounded-xl"
+      />
 
     </div>
 
+    <div className="flex gap-3 mt-6">
+
+      <button
+        onClick={() => {
+          addHearing();
+          setShowAddModal(false);
+        }}
+        className="bg-green-500 px-5 py-3 rounded-xl"
+      >
+        Save
+      </button>
+
+      <button
+        onClick={() => setShowAddModal(false)}
+        className="bg-red-500 px-5 py-3 rounded-xl"
+      >
+        Close
+      </button>
+
+    </div>
+  </div>
+  </div>
+
+)}
+</>
+
   );
+
 }
 
 export default Hearings;

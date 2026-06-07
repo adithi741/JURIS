@@ -30,9 +30,11 @@ function AIAssistant() {
     );
 
     const aiMessage = {
-      role: "ai",
-      message: response.data.reply,
-    };
+  role: "ai",
+  message: response.data.reply || "",
+  type: response.data.type,
+  filename: response.data.filename,
+};
 
     setChats((prev) => [...prev, aiMessage]);
 
@@ -41,6 +43,44 @@ function AIAssistant() {
   }
 
   setMessage("");
+
+};
+
+const downloadPDF = async (content) => {
+
+  try {
+
+    const response = await axios.post(
+      "http://127.0.0.1:5000/generate-pdf",
+      {
+        content: content
+      },
+      {
+        responseType: "blob"
+      }
+    );
+
+    const url = window.URL.createObjectURL(
+      new Blob([response.data])
+    );
+
+    const link = document.createElement("a");
+
+    link.href = url;
+
+    link.download = "legal_document.pdf";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
 
 };
 
@@ -136,10 +176,109 @@ function AIAssistant() {
                     : "bg-white/10"
                 }`}
               >
+{chat.type === "document" ? (
 
-                <pre className="whitespace-pre-wrap text-lg leading-relaxed">
-                  {chat.message}
-                </pre>
+  <div className="space-y-4">
+
+    <h3 className="text-green-400 text-2xl font-bold">
+      📄 Existing Document Found
+    </h3>
+
+    <p className="text-gray-300 leading-relaxed">
+      I found an existing legal document matching your request
+      in the document repository.
+
+      Instead of generating a new draft, you can review the
+      available document first.
+
+      If needed, I can later generate a completely new version.
+    </p>
+
+    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+
+      <p>
+        <span className="text-cyan-400 font-semibold">
+          Document:
+        </span>{" "}
+        {chat.filename}
+      </p>
+
+      <p>
+        <span className="text-cyan-400 font-semibold">
+          Status:
+        </span>{" "}
+        Available
+      </p>
+
+      <p>
+        <span className="text-cyan-400 font-semibold">
+          Source:
+        </span>{" "}
+        Legal Document Repository
+      </p>
+
+    </div>
+
+    <div className="flex gap-4">
+
+      <a
+        href={`http://127.0.0.1:5000/uploads/${chat.filename}`}
+        target="_blank"
+        rel="noreferrer"
+        className="
+        bg-blue-500
+        hover:bg-blue-600
+        px-4 py-2
+        rounded-xl
+        font-semibold
+        "
+      >
+        Open Document
+      </a>
+
+      <a
+        href={`http://127.0.0.1:5000/uploads/${chat.filename}`}
+        download
+        className="
+        bg-green-500
+        hover:bg-green-600
+        px-4 py-2
+        rounded-xl
+        font-semibold
+        "
+      >
+        Download PDF
+      </a>
+
+    </div>
+
+  </div>
+
+) : (
+
+  <pre className="whitespace-pre-wrap">
+    {chat.message}
+  </pre>
+
+)}
+
+{chat.role === "ai" && chat.type !== "document" && (
+
+  <button
+    onClick={() => downloadPDF(chat.message)}
+    className="
+      mt-4
+      bg-green-500
+      hover:bg-green-600
+      px-4 py-2
+      rounded-xl
+      font-semibold
+    "
+  >
+    Download PDF
+  </button>
+
+)}
 
               </div>
 

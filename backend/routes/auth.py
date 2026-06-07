@@ -81,25 +81,26 @@ def login():
         }), 404
 
     if bcrypt.checkpw(
-        password.encode("utf-8"),
-        user["password"]
+    password.encode("utf-8"),
+    user["password"]
     ):
 
         token = jwt.encode(
-    {
-        "email": email,
-        "role": user[4],
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
-    },
-    "juris_secret_key",
-    algorithm="HS256"
-)
+            {
+                "email": email,
+                "role": user["role"],
+                "exp": datetime.datetime.utcnow()
+                + datetime.timedelta(hours=2)
+            },
+            "juris_secret_key",
+            algorithm="HS256"
+        )
 
-    return {
-        "message": "Login Successful",
-        "role": user[4],
-        "token": token
-    }
+        return jsonify({
+            "message": "Login Successful",
+            "role": user["role"],
+            "token": token
+        })
 
     return jsonify({
         "message": "Invalid Password"

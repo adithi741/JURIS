@@ -44,9 +44,9 @@ function AnalyticsChart() {
 
       </div>
 
-      <div className="w-full h-[300px]">
+      <div className="w-full">
 
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={300}>
 
           <LineChart data={data}>
 

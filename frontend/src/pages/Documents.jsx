@@ -488,9 +488,16 @@ const addDocument = async () => {
       <button
         onClick={() => {
 
+          console.log("Selected Doc:", selectedDoc);
+          console.log("Filename:", selectedDoc[1]);
+
           setPdfUrl(
             `http://127.0.0.1:5000/uploads/${selectedDoc[1]}`
           );
+
+          <p className="font-medium">
+            {doc[1].replace(".pdf","").replace(".docx","")}
+          </p>
 
           setShowDetails(false);
 

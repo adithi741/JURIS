@@ -37,34 +37,32 @@ function LawyerDashboard() {
           console.log(error);
         });
 
+        axios
+    .get("http://127.0.0.1:5000/upcoming-hearings")
+    .then((response) => {
+      setHearings(response.data.hearings);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
     }, []);
 
-  const activities = [
-    "New evidence uploaded for LC-2026-001",
-    "Court hearing scheduled for tomorrow",
-    "Client Emma Watson submitted documents",
-    "AI generated NDA draft successfully",
-  ];
+    const [hearings, setHearings] = useState([]);
 
-  const hearings = [
-    {
-      case: "LC-2026-001",
-      time: "10:30 AM",
-      court: "Courtroom A",
-    },
+    const [activities, setActivities] = useState([]);
 
-    {
-      case: "LC-2026-004",
-      time: "01:00 PM",
-      court: "Courtroom C",
-    },
+    useEffect(() => {
+  console.log("Activities:", activities);
+}, [activities]);
 
-    {
-      case: "LC-2026-009",
-      time: "03:45 PM",
-      court: "Courtroom B",
-    },
-  ];
+useEffect(() => {
+  axios
+    .get("http://127.0.0.1:5000/activities")
+    .then((response) => {
+      setActivities(response.data.activities);
+    });
+}, []);
 
   return (
     <div className="flex bg-[#020617] text-white min-h-screen">
@@ -279,22 +277,25 @@ function LawyerDashboard() {
                 Recent Activity
               </h2>
 
-              <div className="space-y-5">
+              <div className="space-y-3">
 
-                {activities.map((activity, index) => (
+  {activities.map((activity, index) => (
 
-                  <div
-                    key={index}
-                    className="bg-white/5 border border-white/5 rounded-2xl px-5 py-4"
-                  >
+    <div
+      key={index}
+      className="
+        bg-white/5
+        border border-white/10
+        rounded-xl
+        p-4
+      "
+    >
+      {activity[0]}
+    </div>
 
-                    {activity}
+  ))}
 
-                  </div>
-
-                ))}
-
-              </div>
+</div>
 
             </div>
 
@@ -312,7 +313,7 @@ function LawyerDashboard() {
 
               <div className="space-y-5">
 
-                {hearings.map((hearing, index) => (
+                {hearings.map((hearing,index)=>(
 
                   <div
                     key={index}
@@ -320,15 +321,15 @@ function LawyerDashboard() {
                   >
 
                     <h3 className="text-xl font-semibold mb-2">
-                      {hearing.case}
+                      {hearing[0]}
                     </h3>
 
                     <p className="text-gray-400">
-                      {hearing.time}
+                      {hearing[1]}
                     </p>
 
                     <p className="text-cyan-400 mt-2">
-                      {hearing.court}
+                      {hearing[2]}
                     </p>
 
                   </div>

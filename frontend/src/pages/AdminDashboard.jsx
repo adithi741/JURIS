@@ -31,12 +31,12 @@ function AdminDashboard() {
   return (
 
     <div className="flex bg-[#020617] text-white min-h-screen">
-      <Topbar />
-      {/* SIDEBAR */}
-      <Sidebar />
 
-      {/* MAIN */}
-      <div className="flex-1 p-8">
+  <Sidebar />
+
+  <div className="flex-1 p-8">
+
+    <Topbar />
 
         {/* HEADER */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">

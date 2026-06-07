@@ -14,7 +14,7 @@ function Clients() {
   const [clients, setClients] = useState([]);
   const [showModal, setShowModal] = useState(false);
 const [selectedClient, setSelectedClient] = useState(null);
-
+const [isEditing, setIsEditing] = useState(false);
 const [name, setName] = useState("");
 const [email, setEmail] = useState("");
 const [phone, setPhone] = useState("");
@@ -203,6 +203,7 @@ const updateClient = async () => {
   type="text"
   placeholder="Search Clients..."
   value={search}
+  readOnly={!isEditing}
   onChange={(e) => setSearch(e.target.value)}
   className="w-full mb-6 bg-white/10 p-4 rounded-xl"
 />
@@ -301,7 +302,10 @@ const updateClient = async () => {
               <div className="flex gap-3 mt-8">
 
   <button
-    onClick={() => openClient(client)}
+    onClick={() => {
+      setIsEditing(false);
+      openClient(client);
+    }}
     className="flex items-center gap-2 bg-blue-500 px-3 py-2 rounded-xl"
   >
     <FaEye />
@@ -309,7 +313,10 @@ const updateClient = async () => {
   </button>
 
   <button
-    onClick={() => openClient(client)}
+    onClick={() => {
+      setIsEditing(true);
+      openClient(client);
+    }}
     className="flex items-center gap-2 bg-yellow-500 text-black px-3 py-2 rounded-xl"
   >
     <FaEdit />
@@ -338,7 +345,7 @@ const updateClient = async () => {
 
     <h2 className="text-3xl font-bold mb-6">
 
-      {selectedClient ? "Edit Client" : "Add Client"}
+      {isEditing ? "Edit Client" : "Client Details"}
 
     </h2>
 
@@ -348,6 +355,7 @@ const updateClient = async () => {
         type="text"
         placeholder="Name"
         value={name}
+        readOnly={!isEditing}
         onChange={(e) => setName(e.target.value)}
         className="w-full bg-white/10 p-4 rounded-xl"
       />
@@ -356,6 +364,7 @@ const updateClient = async () => {
         type="email"
         placeholder="Email"
         value={email}
+        readOnly={!isEditing}
         onChange={(e) => setEmail(e.target.value)}
         className="w-full bg-white/10 p-4 rounded-xl"
       />
@@ -364,6 +373,7 @@ const updateClient = async () => {
         type="text"
         placeholder="Phone"
         value={phone}
+        readOnly={!isEditing}
         onChange={(e) => setPhone(e.target.value)}
         className="w-full bg-white/10 p-4 rounded-xl"
       />
@@ -372,6 +382,7 @@ const updateClient = async () => {
         type="text"
         placeholder="Status"
         value={status}
+        readOnly={!isEditing}
         onChange={(e) => setStatus(e.target.value)}
         className="w-full bg-white/10 p-4 rounded-xl"
       />
@@ -380,16 +391,14 @@ const updateClient = async () => {
 
     <div className="flex gap-4 mt-6">
 
+    {isEditing && (
       <button
-        onClick={
-          selectedClient
-            ? updateClient
-            : addClient
-        }
+        onClick={updateClient}
         className="bg-green-500 px-5 py-3 rounded-xl"
       >
         Save
       </button>
+    )}
 
       <button
         onClick={() => setShowModal(false)}

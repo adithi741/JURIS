@@ -24,6 +24,7 @@ function Cases() {
   const [caseType, setCaseType] = useState("");
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
+  const [showCaseModal, setShowCaseModal] = useState(false);
 
   useEffect(() => {
 
@@ -39,7 +40,6 @@ function Cases() {
   }, []);
 
   const addCase = async () => {
-
   try {
 
     await axios.post(
@@ -48,18 +48,17 @@ function Cases() {
         case_number: caseNumber,
         client_name: clientName,
         case_type: caseType,
-        status: status,
+        status: status
       }
     );
+
+    setShowCaseModal(false);
 
     window.location.reload();
 
   } catch (error) {
-
     console.log(error);
-
   }
-
 };
 
 const deleteCase = async (id) => {
@@ -135,72 +134,28 @@ const updateCase = async () => {
           subtitle="Manage all legal cases efficiently."
         />
 
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-8">
+        <div className="mb-6 flex justify-between">
 
-  <h2 className="text-2xl font-bold mb-5">
-    Add New Case
-  </h2>
-
-  <div className="grid md:grid-cols-2 gap-4">
-
-    <input
-  type="text"
-  placeholder="Search Cases..."
-  value={search}
-  onChange={(e) => setSearch(e.target.value)}
-  className="w-full mb-6 bg-white/10 p-4 rounded-xl"
-/>
-
-    <input
-      type="text"
-      placeholder="Case Number"
-      value={caseNumber}
-      onChange={(e) => setCaseNumber(e.target.value)}
-      className="bg-white/10 p-4 rounded-xl"
-    />
-
-    <input
-      type="text"
-      placeholder="Client Name"
-      value={clientName}
-      onChange={(e) => setClientName(e.target.value)}
-      className="bg-white/10 p-4 rounded-xl"
-    />
-
-    <input
-      type="text"
-      placeholder="Case Type"
-      value={caseType}
-      onChange={(e) => setCaseType(e.target.value)}
-      className="bg-white/10 p-4 rounded-xl"
-    />
-
-    <input
-      type="text"
-      placeholder="Status"
-      value={status}
-      onChange={(e) => setStatus(e.target.value)}
-      className="bg-white/10 p-4 rounded-xl"
-    />
-
-  </div>
+  <input
+    type="text"
+    placeholder="Search Cases..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="w-[350px] bg-white/10 p-4 rounded-xl"
+  />
 
   <button
-  onClick={addCase}
-  className="
-  mt-5
-  flex items-center gap-2
-  bg-green-500
-  hover:bg-green-600
-  px-5 py-3
-  rounded-xl
-  font-semibold
-  transition
-  "
->
-  <FaPlus />
-  Add Case
-</button>
+    onClick={() => setShowCaseModal(true)}
+    className="
+      flex items-center gap-2
+      bg-green-500 hover:bg-green-600
+      px-5 py-3 rounded-xl
+      font-semibold
+    "
+  >
+    <FaPlus />
+    Add Case
+  </button>
 
 </div>
 
@@ -259,15 +214,9 @@ const updateCase = async () => {
 
               </div>
 
-              <div className="flex gap-3 mt-6">
-
-                <div className="flex gap-3 mt-6">
-
-<div className="flex gap-3 mt-6 flex-wrap">
-
   {/* VIEW */}
-    <div className="flex gap-3 mt-6">
 
+    <div className="flex gap-3 mt-6 flex-wrap">
       <button
         onClick={() => viewCase(item)}
         className="flex items-center gap-2 bg-blue-500 px-3 py-2 rounded-xl"
@@ -296,15 +245,9 @@ const updateCase = async () => {
 
 </div>
 
-            </div>
+  ))}
 
-              </div>
-
-            </div>
-
-          ))}
-
-          {showModal && (
+  {showModal && (
 
 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
 
@@ -370,10 +313,78 @@ const updateCase = async () => {
 
 )}
 
-        </div>
+{showCaseModal && (
+
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+
+    <div className="bg-[#061129] w-[500px] rounded-3xl p-8">
+
+      <h2 className="text-3xl font-bold mb-6">
+        Add Case
+      </h2>
+
+      <div className="space-y-4">
+
+        <input
+          type="text"
+          placeholder="Case Number"
+          value={caseNumber}
+          onChange={(e) => setCaseNumber(e.target.value)}
+          className="w-full bg-white/10 p-4 rounded-xl"
+        />
+
+        <input
+          type="text"
+          placeholder="Client Name"
+          value={clientName}
+          onChange={(e) => setClientName(e.target.value)}
+          className="w-full bg-white/10 p-4 rounded-xl"
+        />
+
+        <input
+          type="text"
+          placeholder="Case Type"
+          value={caseType}
+          onChange={(e) => setCaseType(e.target.value)}
+          className="w-full bg-white/10 p-4 rounded-xl"
+        />
+
+        <input
+          type="text"
+          placeholder="Status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="w-full bg-white/10 p-4 rounded-xl"
+        />
 
       </div>
 
+      <div className="flex gap-4 mt-6">
+
+        <button
+          onClick={addCase}
+          className="bg-green-500 px-5 py-3 rounded-xl"
+        >
+          Save
+        </button>
+
+        <button
+          onClick={() => setShowCaseModal(false)}
+          className="bg-red-500 px-5 py-3 rounded-xl"
+        >
+          Close
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
+
+      </div>
+    </div>
     </div>
   );
 }
